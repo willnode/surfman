@@ -22,6 +22,7 @@ pub const EGL_CONTEXT_MINOR_VERSION_KHR: EGLenum = 0x30fb;
 pub const EGL_CONTEXT_OPENGL_PROFILE_MASK: EGLenum = 0x30fd;
 pub const EGL_PLATFORM_DEVICE_EXT: EGLenum = 0x313f;
 pub const EGL_NATIVE_BUFFER_ANDROID: EGLenum = 0x3140;
+pub const EGL_NATIVE_BUFFER_REDOX: EGLenum = 0x3140;
 pub const EGL_PLATFORM_X11_KHR: EGLenum = 0x31d5;
 pub const EGL_PLATFORM_WAYLAND_KHR: EGLenum = 0x31d8;
 pub const EGL_PLATFORM_SURFACELESS_MESA: EGLenum = 0x31dd;
@@ -61,6 +62,8 @@ pub(crate) struct EGLExtensionFunctions {
     >,
     pub(crate) GetNativeClientBufferANDROID:
         Option<extern "C" fn(buffer: *const c_void) -> EGLClientBuffer>,
+    pub(crate) GetNativeClientBufferREDOX:
+        Option<extern "C" fn(buffer: *const c_void) -> EGLClientBuffer>,
     pub(crate) QueryDeviceAttribEXT: Option<
         extern "C" fn(device: EGLDeviceEXT, attribute: EGLint, value: *mut EGLAttrib) -> EGLBoolean,
     >,
@@ -88,6 +91,7 @@ pub(crate) static EGL_EXTENSION_FUNCTIONS: LazyLock<EGLExtensionFunctions> = Laz
 
             CreateDeviceANGLE: cast(get(c"eglCreateDeviceANGLE")),
             GetNativeClientBufferANDROID: cast(get(c"eglGetNativeClientBufferANDROID")),
+            GetNativeClientBufferREDOX: cast(get(c"eglGetNativeClientBufferREDOX")),
             QueryDeviceAttribEXT: cast(get(c"eglQueryDeviceAttribEXT")),
             QueryDisplayAttribEXT: cast(get(c"eglQueryDisplayAttribEXT")),
             QuerySurfacePointerANGLE: cast(get(c"eglQuerySurfacePointerANGLE")),

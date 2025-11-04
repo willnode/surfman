@@ -4,9 +4,9 @@
 
 pub mod generic;
 
-#[cfg(any(android_platform, ohos_platform))]
+#[cfg(any(android_platform, ohos_platform, redox_platform))]
 pub mod egl;
-#[cfg(any(android_platform, ohos_platform))]
+#[cfg(any(android_platform, ohos_platform, redox_platform))]
 pub use egl as default;
 
 #[cfg(macos_platform)]

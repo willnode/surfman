@@ -127,6 +127,13 @@ impl Connection {
         }
     }
 
+    #[cfg(redox_platform)]
+    fn create_native_widget_from_ptr_impl(raw: *mut c_void) -> NativeWidget {
+        NativeWidget {
+            native_window: raw as *mut orbclient::Window,
+        }
+    }
+
     /// Create a native widget from a raw pointer
     pub unsafe fn create_native_widget_from_ptr(
         &self,
@@ -196,6 +203,29 @@ impl Connection {
         match handle.as_raw() {
             OhosNdk(handle) => Ok(NativeWidget {
                 native_window: handle.native_window.as_ptr().cast(),
+            }),
+            _ => Err(Error::IncompatibleNativeWidget),
+        }
+    }
+
+    #[cfg(all(feature = "sm-raw-window-handle-06", redox_platform))]
+    #[inline]
+    fn create_native_widget_from_rwh_06_handle(
+        handle: rwh_06::WindowHandle,
+    ) -> Result<NativeWidget, Error> {
+        use rwh_06::RawWindowHandle::Orbital;
+
+        match handle.as_raw() {
+            Orbital(handle) => Ok({
+                let fd: i32 = handle.window.addr().get() as i32;
+                unsafe {
+                    let window = orbclient::Window::from_raw_fd_no_remap(fd);
+                    let window_box = Box::new(window);
+                    let native_window = Box::into_raw(window_box);
+                    NativeWidget {
+                        native_window,
+                    }
+                }
             }),
             _ => Err(Error::IncompatibleNativeWidget),
         }

@@ -18,8 +18,9 @@ fn main() {
         macos_platform: { target_os = "macos" },
         ios_platform: { target_os = "ios" },
         windows_platform: { target_os = "windows" },
+        redox_platform: { target_os = "redox" },
         apple: { any(target_os = "ios", target_os = "macos") },
-        free_unix: { all(unix, not(apple), not(android_platform), not(target_os = "emscripten"), not(ohos_platform)) },
+        free_unix: { all(unix, not(apple), not(android_platform), not(redox_platform), not(target_os = "emscripten"), not(ohos_platform)) },
 
         // Native displays.
         x11_platform: { all(free_unix, feature = "sm-x11") },
@@ -44,6 +45,7 @@ fn main() {
     if target_os == "android"
         || (target_os == "windows" && cfg!(feature = "sm-angle"))
         || target_env == "ohos"
+        || target_os == "redox"
         || target_family.as_ref().map_or(false, |f| f == "unix")
     {
         let mut file = File::create(dest.join("egl_bindings.rs")).unwrap();
