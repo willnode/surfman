@@ -23,7 +23,7 @@ use glow::{HasContext, Texture};
 use orbclient::{Color, Renderer};
 use std::marker::PhantomData;
 use std::os::raw::c_void;
-use std::ptr::{self, addr_of};
+use std::ptr::{self};
 
 const SURFACE_GL_TEXTURE_TARGET: u32 = crate::gl::TEXTURE_2D;
 
@@ -120,14 +120,14 @@ impl Device {
         context: &Context,
         native_window: *mut orbclient::Window,
     ) -> Result<Surface, Error> {
+        use std::os::fd::AsRawFd;
         let width = (*native_window).width() as i32;
         let height = (*native_window).height() as i32;
-
         EGL_FUNCTIONS.with(|egl| {
             let egl_surface = egl.CreateWindowSurface(
                 self.egl_display,
                 self.context_to_egl_config(context),
-                addr_of!(native_window) as *const c_void,
+                native_window as *const c_void,
                 ptr::null(),
             );
             assert_ne!(egl_surface, egl::NO_SURFACE);
@@ -288,14 +288,12 @@ impl Device {
                     let result = (EGL_EXTENSION_FUNCTIONS.DestroyImageKHR)(egl_display, *egl_image);
                     assert_ne!(result, egl::FALSE);
                     *egl_image = EGL_NO_IMAGE_KHR;
-
-                    drop(hardware_buffer);
                 }
                 SurfaceObjects::Window {
                     ref mut egl_surface,
                 } => EGL_FUNCTIONS.with(|egl| {
-                    egl.DestroySurface(self.egl_display, *egl_surface);
-                    *egl_surface = egl::NO_SURFACE;
+                    // egl.DestroySurface(self.egl_display, *egl_surface);
+                    // *egl_surface = egl::NO_SURFACE;
                 }),
             }
         }

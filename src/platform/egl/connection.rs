@@ -219,7 +219,8 @@ impl Connection {
             Orbital(handle) => Ok({
                 let fd: i32 = handle.window.addr().get() as i32;
                 unsafe {
-                    let window = orbclient::Window::from_raw_fd_no_remap(fd);
+                    use std::os::fd::FromRawFd;
+                    let window = orbclient::Window::from_raw_fd(fd);
                     let window_box = Box::new(window);
                     let native_window = Box::into_raw(window_box);
                     NativeWidget {
