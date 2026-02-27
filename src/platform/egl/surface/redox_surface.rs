@@ -22,6 +22,7 @@ use euclid::default::Size2D;
 use glow::{HasContext, Texture};
 use orbclient::{Color, Renderer};
 use std::marker::PhantomData;
+use std::os::fd::{FromRawFd, IntoRawFd};
 use std::os::raw::c_void;
 use std::ptr::{self};
 
@@ -42,7 +43,7 @@ pub(crate) enum SurfaceObjects {
 
 /// An Redox native window.
 pub struct NativeWidget {
-    pub(crate) native_window: *mut orbclient::Window,
+    pub(crate) native_window_fd: i32,
 }
 
 impl Device {
@@ -59,7 +60,7 @@ impl Device {
         match surface_type {
             SurfaceType::Generic { size } => self.create_generic_surface(context, &size),
             SurfaceType::Widget { native_widget } => unsafe {
-                self.create_window_surface(context, native_widget.native_window)
+                self.create_window_surface(context, native_widget.native_window_fd)
             },
         }
     }
@@ -118,16 +119,19 @@ impl Device {
     unsafe fn create_window_surface(
         &mut self,
         context: &Context,
-        native_window: *mut orbclient::Window,
+        native_window_fd: i32,
     ) -> Result<Surface, Error> {
         use std::os::fd::AsRawFd;
-        let width = (*native_window).width() as i32;
-        let height = (*native_window).height() as i32;
+        let window = orbclient::Window::from_raw_fd(native_window_fd);
+        let width = window.width() as i32;
+        let height = window.height() as i32;
+        // See mesa dri2_redox_create_window_surface
         EGL_FUNCTIONS.with(|egl| {
             let egl_surface = egl.CreateWindowSurface(
                 self.egl_display,
                 self.context_to_egl_config(context),
-                native_window as *const c_void,
+                // this prevents the window being dropped
+                window.into_raw_fd() as *const c_void,
                 ptr::null(),
             );
             assert_ne!(egl_surface, egl::NO_SURFACE);
@@ -198,6 +202,7 @@ impl Device {
         EGL_FUNCTIONS.with(|egl| unsafe {
             match surface.objects {
                 SurfaceObjects::Window { egl_surface } => {
+                    // See mesa redox_swap_buffers
                     egl.SwapBuffers(self.egl_display, egl_surface);
                     Ok(())
                 }
@@ -236,6 +241,7 @@ impl Device {
             egl::NONE as EGLint,
             0,
         ];
+        // See mesa dri2_create_image_khr
         let egl_image = (EGL_EXTENSION_FUNCTIONS.CreateImageKHR)(
             self.egl_display,
             egl::NO_CONTEXT,
@@ -289,11 +295,9 @@ impl Device {
                     assert_ne!(result, egl::FALSE);
                     *egl_image = EGL_NO_IMAGE_KHR;
                 }
-                SurfaceObjects::Window {
-                    ref mut egl_surface,
-                } => EGL_FUNCTIONS.with(|egl| {
-                    // egl.DestroySurface(self.egl_display, *egl_surface);
-                    // *egl_surface = egl::NO_SURFACE;
+                SurfaceObjects::Window { egl_surface } => EGL_FUNCTIONS.with(|egl| {
+                    // See mesa redox_destroy_surface
+                    egl.DestroySurface(self.egl_display, egl_surface);
                 }),
             }
         }
@@ -381,7 +385,9 @@ impl NativeWidget {
     /// Creates a native widget type from an Redox `NativeWindow`.
     #[inline]
     pub unsafe fn from_native_window(native_window: *mut orbclient::Window) -> NativeWidget {
-        NativeWidget { native_window }
+        NativeWidget {
+            native_window_fd: native_window as i32,
+        }
     }
 }
 

@@ -130,7 +130,7 @@ impl Connection {
     #[cfg(redox_platform)]
     fn create_native_widget_from_ptr_impl(raw: *mut c_void) -> NativeWidget {
         NativeWidget {
-            native_window: raw as *mut orbclient::Window,
+            native_window_fd: raw as i32,
         }
     }
 
@@ -219,12 +219,8 @@ impl Connection {
             Orbital(handle) => Ok({
                 let fd: i32 = handle.window.addr().get() as i32;
                 unsafe {
-                    use std::os::fd::FromRawFd;
-                    let window = orbclient::Window::from_raw_fd(fd);
-                    let window_box = Box::new(window);
-                    let native_window = Box::into_raw(window_box);
                     NativeWidget {
-                        native_window,
+                        native_window_fd: fd,
                     }
                 }
             }),
