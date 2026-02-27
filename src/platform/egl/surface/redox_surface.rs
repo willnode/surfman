@@ -121,7 +121,6 @@ impl Device {
         context: &Context,
         native_window_fd: i32,
     ) -> Result<Surface, Error> {
-        use std::os::fd::AsRawFd;
         let window = orbclient::Window::from_raw_fd(native_window_fd);
         let width = window.width() as i32;
         let height = window.height() as i32;
@@ -272,7 +271,7 @@ impl Device {
         unsafe {
             match surface.objects {
                 SurfaceObjects::HardwareBuffer {
-                    ref mut hardware_buffer,
+                    hardware_buffer: _, // managed object, can drop itself
                     ref mut egl_image,
                     ref mut framebuffer_object,
                     ref mut texture_object,

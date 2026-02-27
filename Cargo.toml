@@ -113,7 +113,7 @@ objc2-quartz-core = { version = "0.3.1", default-features = false, features = [
 ] }
 
 [target.'cfg(target_os = "redox")'.dependencies]
-orbclient = { git = "https://gitlab.redox-os.org/redox-os/orbclient" }
+orbclient = "0.3.50"
 
 [target.'cfg(all(unix, not(any(target_os = "macos", target_os = "android", target_env = "ohos", target_os = "redox"))))'.dependencies.wayland-sys]
 version = "0.31"

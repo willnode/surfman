@@ -218,10 +218,8 @@ impl Connection {
         match handle.as_raw() {
             Orbital(handle) => Ok({
                 let fd: i32 = handle.window.addr().get() as i32;
-                unsafe {
-                    NativeWidget {
-                        native_window_fd: fd,
-                    }
+                NativeWidget {
+                    native_window_fd: fd,
                 }
             }),
             _ => Err(Error::IncompatibleNativeWidget),
