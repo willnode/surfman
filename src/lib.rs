@@ -25,7 +25,7 @@ mod context;
 pub mod device;
 pub mod error;
 mod gl_utils;
-#[cfg(any(android_platform, ohos_platform))]
+#[cfg(any(android_platform, ohos_platform, redox_platform))]
 pub mod hardware_buffer;
 mod info;
 pub mod macros;
@@ -47,7 +47,7 @@ pub mod x11;
 pub use angle as default;
 #[cfg(macos_platform)]
 pub use cgl as default;
-#[cfg(any(android_platform, ohos_platform))]
+#[cfg(any(android_platform, ohos_platform, redox_platform))]
 pub use hardware_buffer as default;
 #[cfg(all(x11_platform, not(wayland_default)))]
 pub use unix as default;
@@ -77,6 +77,7 @@ pub use base::io_surface::surface::Surface as SystemSurface;
 
 #[cfg(any(
     target_os = "android",
+    target_os = "redox",
     target_env = "ohos",
     all(target_os = "windows", feature = "sm-angle"),
     unix

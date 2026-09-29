@@ -25,6 +25,12 @@ mod ohos_surface;
 #[cfg(ohos_platform)]
 pub use ohos_surface::*;
 
+#[cfg(redox_platform)]
+mod redox_surface;
+
+#[cfg(redox_platform)]
+pub use redox_surface::*;
+
 /// Represents a hardware buffer of pixels that can be rendered to via the CPU or GPU and either
 /// displayed in a native widget or bound to a texture for reading.
 ///

@@ -352,7 +352,7 @@ impl ContextDescriptor {
         }
 
         // Android/OHOS does not support OpenGL compatibility profile at all
-        if cfg!(any(android_platform, ohos_platform)) && compatibility_profile {
+        if cfg!(any(android_platform, ohos_platform, redox_platform)) && compatibility_profile {
             return Err(Error::UnsupportedGLProfile);
         }
 
